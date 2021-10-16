@@ -125,7 +125,7 @@ private:
             token.data.op = lexeme;
             if (index == 0 || isOperator(exp[index - 1]) || exp[index - 1] == '(')
             {
-                //lexeme should be + or - else return error
+                //TODO::lexeme should be + or - else return error
                 token.type = Type::UNARY_OPERATOR;
             }
             else
@@ -135,7 +135,7 @@ private:
         }
         else
         {
-            //lexeme must be parenthisis else return error
+            //TODO::lexeme must be parenthisis else return error
             token.data.paren = lexeme;
             token.type = lexeme == '(' ? Type::L_PAREN : Type::R_PAREN;
         }
@@ -187,7 +187,7 @@ class Evaluator
 {
     static int PrecedenceOf(const Token &token)
     {
-        //token can be either op or paren(Left)
+        //TODO::token can be either op or paren(Left)
         const char op = token.data.op;
         if (token.type == Type::UNARY_OPERATOR)
             return 4;
