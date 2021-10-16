@@ -34,22 +34,22 @@ void LOG(const Token &token)
     switch (token.type)
     {
     case Type::INTEGER:
-        std::cout << "INTEGER: " << token.data.integer << '\n';
+        std::cout << "Type:[INTEGER] Value[" << token.data.integer << "]\n";
         break;
     case Type::DECIMAL:
-        std::cout << "DECIMAL: " << token.data.decimal << '\n';
+        std::cout << "Type:[DECIMAL] Value[" << token.data.decimal << "]\n";
         break;
     case Type::BINARY_OPERATOR:
-        std::cout << "BINARY OPERATOR: " << token.data.op << '\n';
+        std::cout << "Type:[BINARY OPERATOR] Value[" << token.data.op << "]\n";
         break;
     case Type::UNARY_OPERATOR:
-        std::cout << "UNARY OPERATOR: " << token.data.op << '\n';
+        std::cout << "Type[UNARY OPERATOR] Value[" << token.data.op << "]\n";
         break;
     case Type::L_PAREN:
-        std::cout << "L_PAREN: " << token.data.paren << '\n';
+        std::cout << "Type[L_PAREN] Value[" << token.data.paren << "]\n";
         break;
     case Type::R_PAREN:
-        std::cout << "R_PAREN: " << token.data.paren << '\n';
+        std::cout << "Type[R_PAREN] Value[" << token.data.paren << "]\n";
         break;
     default:
         assert(false);
@@ -156,8 +156,8 @@ private:
 public:
     static std::vector<Token> Lex(const std::string &expression)
     {
-        std::string exp = Trim(expression);
-        const std::unordered_set<int> sep = {'+', '-', '/', '*', '^', '(', ')'};
+        const std::string& exp = Trim(expression);
+        static const std::unordered_set<int> sep = {'+', '-', '/', '*', '^', '(', ')'};
         std::string lexeme;
         std::vector<Token> tokens;
         for (int i = 0; i < exp.length(); ++i)
@@ -189,9 +189,9 @@ class Evaluator
     {
         //token can be either op or paren(Left)
         const char op = token.data.op;
-        if (op == '^')
-            return 4;
         if (token.type == Type::UNARY_OPERATOR)
+            return 4;
+        if (op == '^')
             return 3;
         if (op == '/' || op == '*')
             return 2;
@@ -255,6 +255,45 @@ class Evaluator
         return result;
     }
 
+    static Token Power(Token base, int power)
+    {
+        Token result;
+        result.type = base.type;
+        if (result.type == Type::INTEGER)
+            result.data.integer = 1;
+        else
+            result.data.decimal = 1.0f;
+
+        while (power)
+        {
+            if (power & 1)
+            {
+                if (result.type == Type::INTEGER)
+                    result.data.integer *= base.data.integer;
+                else
+                    result.data.decimal *= base.data.decimal;
+            }
+
+            if (base.type == Type::INTEGER)
+                base.data.integer *= base.data.integer;
+            else
+                base.data.decimal *= base.data.decimal;
+            power >>= 1;
+        }
+        return result;
+    }
+
+    static Token Power(const Token &lhs, const Token &rhs)
+    {
+        //TODO::Throw error on non integer power.
+        Token result = Power(lhs, abs(rhs.data.integer));
+        if(rhs.data.integer < 0){
+            result.data.decimal = 1.0f / (result.type == Type::INTEGER ? result.data.integer : result.data.decimal);
+            result.type = Type::DECIMAL;
+        }
+        return result;
+    }
+
     static Token EvaluateBinary(const Token &lhs, const Token &rhs, const Token &operation)
     {
         Token result;
@@ -288,6 +327,8 @@ class Evaluator
             else
                 result.data.integer = lhs.data.integer * rhs.data.integer;
             break;
+        case '^':
+            return Power(lhs, rhs);
         default:
             assert(false);
             break;
