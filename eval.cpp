@@ -156,7 +156,7 @@ private:
 public:
     static std::vector<Token> Lex(const std::string &expression)
     {
-        const std::string& exp = Trim(expression);
+        const std::string &exp = Trim(expression);
         static const std::unordered_set<int> sep = {'+', '-', '/', '*', '^', '(', ')'};
         std::string lexeme;
         std::vector<Token> tokens;
@@ -287,7 +287,8 @@ class Evaluator
     {
         //TODO::Throw error on non integer power.
         Token result = Power(lhs, abs(rhs.data.integer));
-        if(rhs.data.integer < 0){
+        if (rhs.data.integer < 0)
+        {
             result.data.decimal = 1.0f / (result.type == Type::INTEGER ? result.data.integer : result.data.decimal);
             result.type = Type::DECIMAL;
         }
@@ -364,9 +365,9 @@ class Evaluator
     }
 
 public:
-    static Token Eval(const std::vector<Token> &token)
+    static Token Eval(const std::string &expression)
     {
-        return PostfixEvaluator(InfixToPostifx(token));
+        return PostfixEvaluator(InfixToPostifx(Lexer::Lex(expression)));
     }
 };
 
@@ -374,8 +375,7 @@ int main()
 {
     std::string expression;
     std::getline(std::cin, expression);
-    std::vector<Token> tokens = Lexer::Lex(expression);
-    Token result = Evaluator::Eval(tokens);
+    Token result = Evaluator::Eval(expression);
     LOG(result);
     return 0;
 }
